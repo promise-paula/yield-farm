@@ -84,3 +84,48 @@
     (ok true)
   )
 )
+
+;; Validate commitment buffer with proper error handling
+(define-private (validate-commitment-data (commitment (buff 32)))
+  (if (not (is-eq commitment ZERO-BUFFER))
+    (ok commitment)
+    ERR-INVALID-COMMITMENT
+  )
+)
+
+;; Optimized hash mixing function
+(define-private (mix-seed
+    (input-seed (buff 32))
+    (block-hash (buff 32))
+  )
+  (sha512/256 (concat input-seed block-hash))
+)
+
+;; Modified buffer conversion function
+(define-private (to-16-bytes (input (buff 32)))
+  (unwrap-panic (as-max-len? (unwrap-panic (slice? input u0 u16)) u16))
+)
+
+;; Validate address with proper error handling
+(define-private (validate-address-data (address principal))
+  (if (not (is-eq address contract-owner))
+    (ok address)
+    ERR-INVALID-ADDRESS
+  )
+)
+
+;; Commit-reveal scheme functions
+
+(define-public (commit-random (commitment (buff 32)))
+  (begin
+    (try! (check-conditions))
+    (match (validate-commitment-data commitment)
+      success (ok (map-set commitments tx-sender {
+        commit-hash: success,
+        commit-height: stacks-block-height,
+        revealed: false,
+      }))
+      error ERR-INVALID-COMMITMENT
+    )
+  )
+)
