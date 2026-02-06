@@ -1,12 +1,12 @@
 [project]
-name = 'social-governance'
+name = 'yield-farm'
 description = ''
 authors = []
 telemetry = true
 cache_dir = './.cache'
 requirements = []
-[contracts.social-governance]
-path = 'contracts/social-governance.clar'
+[contracts.yield-farm]
+path = 'contracts/yield-farm.clar'
 clarity_version = 4
 epoch = 'latest'
 [repl.analysis]
