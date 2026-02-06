@@ -40,3 +40,47 @@
     revealed: bool,
   }
 )
+
+(define-map restricted-addresses
+  principal
+  bool
+)
+(define-map generation-stats
+  principal
+  uint
+)
+
+;; Read-only functions
+
+(define-read-only (get-last-random)
+  (ok (var-get last-random))
+)
+
+(define-read-only (get-commitment (user principal))
+  (map-get? commitments user)
+)
+
+(define-read-only (is-restricted (address principal))
+  (default-to false (map-get? restricted-addresses address))
+)
+
+;; Private helper functions
+
+(define-private (validate-caller)
+  (if (is-eq tx-sender contract-owner)
+    (ok true)
+    ERR-OWNER-ONLY
+  )
+)
+
+(define-private (check-conditions)
+  (begin
+    (asserts! (not (var-get maintenance-mode)) ERR-MAINTENANCE)
+    (asserts! (not (is-restricted tx-sender)) ERR-BLACKLISTED)
+    (asserts!
+      (> stacks-block-height (+ (var-get last-block) GENERATION-COOLDOWN))
+      ERR-COOLDOWN-ACTIVE
+    )
+    (ok true)
+  )
+)
