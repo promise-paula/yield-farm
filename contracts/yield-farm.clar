@@ -129,3 +129,40 @@
     )
   )
 )
+
+;; Administrative functions
+
+(define-public (set-maintenance-mode (mode bool))
+  (begin
+    (try! (validate-caller))
+    (ok (var-set maintenance-mode mode))
+  )
+)
+
+(define-public (add-restricted-address (address principal))
+  (begin
+    (try! (validate-caller))
+    (match (validate-address-data address)
+      validated-address (ok (map-set restricted-addresses validated-address true))
+      error ERR-INVALID-ADDRESS
+    )
+  )
+)
+
+(define-public (remove-restricted-address (address principal))
+  (begin
+    (try! (validate-caller))
+    (match (validate-address-data address)
+      validated-address (ok (map-delete restricted-addresses validated-address))
+      error ERR-INVALID-ADDRESS
+    )
+  )
+)
+
+;; Initialize contract
+(begin
+  (var-set maintenance-mode false)
+  (var-set last-random u0)
+  (var-set current-seed ZERO-BUFFER)
+  (var-set last-block u0)
+)
